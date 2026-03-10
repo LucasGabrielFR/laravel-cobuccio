@@ -24,7 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'balance',
-        'supabase_id',
+        'is_active',
     ];
 
     /**
@@ -48,6 +48,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'balance' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
 

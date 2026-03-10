@@ -8,7 +8,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <button class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 text-sm font-medium">
+            <button wire:click="create" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Novo Usuário
             </button>
@@ -17,44 +17,35 @@
 
     <!-- Stats Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 flex flex-col relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="p-3 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Total de Usuários</h3>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ $stats['total_users'] }}</p>
-                </div>
-            </div>
-        </div>
+        <x-admin.stat-card 
+            title="Total de Usuários" 
+            value="{{ $stats['total_users'] }}" 
+            color="blue"
+        >
+            <x-slot name="icon">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </x-slot>
+        </x-admin.stat-card>
 
-        <div class="p-6 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 flex flex-col relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Usuários Ativos</h3>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ $stats['total_users'] }}</p>
-                </div>
-            </div>
-        </div>
+        <x-admin.stat-card 
+            title="Usuários Ativos" 
+            value="{{ $stats['total_users'] }}" 
+            color="emerald"
+        >
+            <x-slot name="icon">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </x-slot>
+        </x-admin.stat-card>
 
-        <div class="p-6 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 flex flex-col relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo Transacionado</h3>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">Em breve</p>
-                </div>
-            </div>
-        </div>
+        <x-admin.stat-card 
+            title="Saldo Transacionado" 
+            value="Em breve" 
+            color="indigo"
+        >
+            <x-slot name="icon">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </x-slot>
+        </x-admin.stat-card>
     </div>
 
     <!-- Users Table -->
@@ -73,7 +64,10 @@
                     <tr>
                         <th class="px-6 py-4 font-medium">Usuário</th>
                         <th class="px-6 py-4 font-medium">E-mail</th>
+                        <th class="px-6 py-4 font-medium">Perfil</th>
                         <th class="px-6 py-4 font-medium">Status</th>
+                        <th class="px-6 py-4 font-medium">Cadastrado em</th>
+                        <th class="px-6 py-4 font-medium">Atualizado em</th>
                         <th class="px-6 py-4 font-medium text-right">Ações</th>
                     </tr>
                 </thead>
@@ -92,23 +86,51 @@
                                 {{ $user->email }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    Normal
-                                </span>
+                                @if($user->role === 'admin')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                        Admin
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
+                                        Cliente
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($user->is_active)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Ativo
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        Inativo
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
+                                {{ $user->created_at?->format('d/m/Y H:i') ?? '-' }}
+                            </td>
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
+                                {{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1" title="Editar">
+                                <button wire:click="edit({{ $user->id }})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1" title="Editar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
-                                <button class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 ml-2" title="Excluir">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                <button wire:click="confirmToggleStatus({{ $user->id }})" class="{{ $user->is_active ? 'text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300' : 'text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300' }} transition-colors p-1 ml-2" title="{{ $user->is_active ? 'Desativar' : 'Ativar' }}">
+                                    @if($user->is_active)
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                    @else
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    @endif
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/20">
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/20">
                                 Nenhum usuário encontrado no sistema.
                             </td>
                         </tr>
@@ -122,4 +144,78 @@
             </div>
         @endif
     </div>
+    <!-- Create/Edit Modal Component -->
+    <x-modal :show="$showModal" maxWidth="md">
+        <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+            <h3 class="text-lg font-medium text-slate-900 dark:text-white" id="modal-title">
+                {{ $editingUserId ? 'Editar Usuário' : 'Novo Usuário' }}
+            </h3>
+            <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 focus:outline-none">
+                <span class="sr-only">Fechar</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <form wire:submit="save">
+            <div class="p-6 space-y-4">
+                <!-- Nome -->
+                <x-input-group id="name" model="name" label="Nome" />
+
+                <!-- Email -->
+                <x-input-group id="email" model="email" label="E-mail" type="email" />
+
+                <!-- Perfil -->
+                <x-select-group 
+                    id="role" 
+                    model="role" 
+                    label="Perfil" 
+                    :options="['admin' => 'Administrador', 'client' => 'Cliente']" 
+                />
+
+                <!-- Password -->
+                <x-input-group id="password" model="password" label="Senha {{ $editingUserId ? '(Deixe em branco para manter)' : '' }}" type="password" />
+
+                <!-- Ativo / Inativo Toggle -->
+                <div class="flex items-center gap-3 pt-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" wire:model="is_active" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium text-slate-700 dark:text-slate-300">Usuário Ativo</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-end gap-3">
+                <button type="button" wire:click="$set('showModal', false)" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Confirm Modal Component -->
+    <x-modal :show="$showConfirmModal" maxWidth="sm">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
+                <svg class="h-8 w-8 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-2" id="confirm-modal-title">Confirmar Ação</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Você tem certeza que deseja alterar o status deste usuário?
+            </p>
+        </div>
+        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-center gap-3">
+            <button wire:click="cancelToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+            </button>
+            <button wire:click="performToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg shadow-sm hover:bg-orange-700 focus:outline-none dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors">
+                Confirmar
+            </button>
+        </div>
+    </x-modal>
 </div>

@@ -21,4 +21,19 @@ class UserService
             'total_users' => $this->userRepository->getTotalUsersCount(),
         ];
     }
+
+    public function getUser(int $id)
+    {
+        return $this->userRepository->findById($id);
+    }
+
+    public function createUser(array $data)
+    {
+        return $this->userRepository->create($data);
+    }
+
+    public function updateUser(int $id, array $data)
+    {
+        return $this->userRepository->update($id, $data);
+    }
 }

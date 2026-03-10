@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5126ddcfd6dc12c019e4bc14d25ee241",
+    "content-hash": "b9bd1f3408d57b6f1252fe0209bf0100",
     "packages": [
         {
             "name": "brick/math",
@@ -3370,69 +3370,6 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.2"
             },
             "time": "2025-12-14T04:43:48+00:00"
-        },
-        {
-            "name": "supabase-php/supabase-client",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/CodeWithSushil/supabase-client.git",
-                "reference": "af7d170d4827b40f92aafb1aceb98572a79ed944"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/CodeWithSushil/supabase-client/zipball/af7d170d4827b40f92aafb1aceb98572a79ed944",
-                "reference": "af7d170d4827b40f92aafb1aceb98572a79ed944",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.2.0",
-                "vlucas/phpdotenv": "^5.6"
-            },
-            "require-dev": {
-                "pestphp/pest": "^3.8",
-                "phpstan/phpstan": "^2.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Supabase\\Client\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Sushil Kumar",
-                    "email": "sushilkumbhar77@gmail.com",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Ashish Kumbhar",
-                    "email": "ashishkumbhar01@hotmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Supabase client for PHP.",
-            "keywords": [
-                "supabase",
-                "supabase-client",
-                "supabase-php",
-                "supabase-sdk"
-            ],
-            "support": {
-                "issues": "https://github.com/CodeWithSushil/supabase-client/issues",
-                "source": "https://github.com/CodeWithSushil/supabase-client/releases"
-            },
-            "funding": [
-                {
-                    "url": "https://opencollective.com/CodeWithSushil",
-                    "type": "Open Collective"
-                }
-            ],
-            "time": "2025-12-25T19:13:29+00:00"
         },
         {
             "name": "symfony/clock",
@@ -8527,12 +8464,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }
