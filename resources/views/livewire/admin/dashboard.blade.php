@@ -89,14 +89,14 @@
                             <div class="flex items-center gap-3">
                                 <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs font-mono font-bold">#{{ $reversal->id }}</span>
                                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                    {{ $reversal->sender->name }} solicitou estorno de R$ {{ number_format($reversal->amount/100, 2, ',', '.') }}
+                                    {{ $reversal->type === 'deposit' ? $reversal->receiver->name : $reversal->sender->name }} solicitou estorno de R$ {{ number_format($reversal->amount/100, 2, ',', '.') }}
                                 </p>
                             </div>
                             <div class="p-3 bg-white dark:bg-slate-900 border border-orange-200 dark:border-orange-800/50 rounded-lg italic text-sm text-slate-600 dark:text-slate-400">
                                 "{{ $reversal->reversal_reason }}"
                             </div>
                             <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                Para: {{ $reversal->receiver->name }} • Realizada em {{ $reversal->created_at->format('d/m/Y H:i') }}
+                                Para: {{ $reversal->type === 'deposit' ? 'Sistema / Retirada' : $reversal->receiver->name }} • Realizada em {{ $reversal->created_at->format('d/m/Y H:i') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-3 shrink-0">
@@ -254,6 +254,11 @@
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
                                         Depósito PIX
                                     </span>
+                                @elseif($transaction->type === 'reversal')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        Estorno
+                                    </span>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
@@ -272,10 +277,14 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{{ substr($transaction->receiver->name, 0, 1) }}</div>
-                                    <span class="font-medium text-slate-700 dark:text-slate-300">{{ $transaction->receiver->name }}</span>
-                                </div>
+                                @if($transaction->receiver)
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{{ substr($transaction->receiver->name, 0, 1) }}</div>
+                                        <span class="font-medium text-slate-700 dark:text-slate-300">{{ $transaction->receiver->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-slate-400 dark:text-slate-500 italic">Sistema / Saída</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-right font-bold {{ $transaction->type === 'deposit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                 {{ $transaction->type === 'deposit' ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}

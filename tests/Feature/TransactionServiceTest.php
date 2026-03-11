@@ -161,4 +161,48 @@ class TransactionServiceTest extends TestCase
             'reversal_status' => 'rejected',
         ]);
     }
+
+    public function test_can_request_deposit_reversal()
+    {
+        $user = User::factory()->create(['balance' => 0]);
+        $transaction = $this->transactionService->deposit($user, 50.00);
+
+        $reversal = $this->transactionService->requestReversal($transaction->id, $user->id, 'Estorno de depósito');
+
+        $this->assertEquals('requested', $reversal->reversal_status);
+        $this->assertEquals('Estorno de depósito', $reversal->reversal_reason);
+
+        $this->assertDatabaseHas('transactions', [
+            'id' => $transaction->id,
+            'reversal_status' => 'requested',
+        ]);
+    }
+
+    public function test_can_approve_deposit_reversal()
+    {
+        $user = User::factory()->create(['balance' => 5000]);
+        $transaction = $this->transactionService->deposit($user, 100.00);
+
+        $this->transactionService->requestReversal($transaction->id, $user->id, 'Estorno de depósito');
+        
+        $this->transactionService->approveReversal($transaction->id);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'balance' => 5000, // Balance restored to previous amount (5000 + 10000 - 10000)
+        ]);
+
+        $this->assertDatabaseHas('transactions', [
+            'id' => $transaction->id,
+            'reversal_status' => 'approved',
+        ]);
+
+        $this->assertDatabaseHas('transactions', [
+            'sender_id' => $user->id,
+            'receiver_id' => null,
+            'amount' => 10000,
+            'type' => 'reversal',
+            'related_transaction_id' => $transaction->id,
+        ]);
+    }
 }

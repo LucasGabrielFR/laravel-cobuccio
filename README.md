@@ -166,6 +166,22 @@ Para garantir a reversibilidade e segurança contra erros humanos ou fraudes, im
     *   **Aprovação:** O sistema realiza o *Rollback* financeiro (debitando do destino e creditando na origem) e gera uma **nova transação de estorno** vinculada à original para manter o livro-razão (ledger) consistente.
     *   **Rejeição:** A transação original volta ao estado normal de "Concluído", e o cliente é notificado visualmente no extrato.
 
+## 🔍 Sistema de Auditoria de Integridade
+
+O sistema conta com uma ferramenta de linha de comando para garantir que o saldo de cada usuário seja rigorosamente igual à soma de suas transações históricas, cumprindo o requisito de reversibilidade e segurança.
+
+### Como funciona:
+O comando percorre todos os usuários, reconstrói o saldo a partir do zero (somando depósitos/recebimentos e subtraindo transferências/estornos enviados) e compara com o valor atual no banco de dados.
+
+### Execução:
+```bash
+# Apenas verificar inconsistências
+php artisan wallet:audit
+
+# Verificar e corrigir automaticamente (Sincronizar saldo com histórico)
+php artisan wallet:audit --fix
+```
+
 ## 🏗️ Modelagem de Dados (ER Diagram)
 
 A estrutura do banco de dados foi projetada para consistência e rastreabilidade:

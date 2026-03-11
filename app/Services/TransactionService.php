@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\TransactionRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Models\User;
+use App\Helpers\MoneyHelper;
 use Illuminate\Support\Facades\DB;
 
 class TransactionService
@@ -29,8 +30,8 @@ class TransactionService
         }
 
         return DB::transaction(function () use ($user, $amount) {
-            // Converter para centavos
-            $amountInCents = (int) round($amount * 100);
+            // Converter para centavos usando Helper
+            $amountInCents = MoneyHelper::toCents($amount);
 
             // 1. Atualizar saldo do usuário
             $newBalance = $user->balance + $amountInCents;
@@ -67,7 +68,7 @@ class TransactionService
         }
 
         return DB::transaction(function () use ($sender, $receiver, $amount) {
-            $amountInCents = (int) round($amount * 100);
+            $amountInCents = MoneyHelper::toCents($amount);
 
             // Bloquear a linha do remetente atualizando (Pessimistic Locking) pode ser implementado em grandes escalas, 
             // mas para agora usaremos o saldo em memória carregado pela requisição atual.
@@ -105,9 +106,6 @@ class TransactionService
         return $this->transactionRepository->getPaginatedTransactions($userId, $perPage);
     }
 
-    /**
-     * Solicita o estorno de uma transação enviada por um usuário
-     */
     public function requestReversal(int $transactionId, int $userId, string $reason)
     {
         $transaction = $this->transactionRepository->findById($transactionId);
@@ -116,12 +114,16 @@ class TransactionService
             throw new \Exception('Transação não encontrada.');
         }
 
-        if ($transaction->sender_id !== $userId) {
-            throw new \Exception('Apenas o remetente pode solicitar o estorno desta transação.');
+        if ($transaction->type === 'transfer' && $transaction->sender_id !== $userId) {
+            throw new \Exception('Apenas o remetente pode solicitar o estorno desta transferência.');
         }
 
-        if ($transaction->type !== 'transfer') {
-            throw new \Exception('Apenas transferências podem ser estornadas.');
+        if ($transaction->type === 'deposit' && $transaction->receiver_id !== $userId) {
+            throw new \Exception('Apenas o recebedor pode solicitar o estorno deste depósito.');
+        }
+
+        if (!in_array($transaction->type, ['transfer', 'deposit'])) {
+            throw new \Exception('Este tipo de transação não pode ser estornada.');
         }
 
         if ($transaction->reversal_status !== 'none') {
@@ -148,35 +150,50 @@ class TransactionService
         }
 
         return DB::transaction(function () use ($transaction) {
-            $sender = $this->userRepository->findById($transaction->sender_id);
             $receiver = $this->userRepository->findById($transaction->receiver_id);
 
-            // Se o recebedor já não tiver saldo suficiente, a transação lançaria um aviso?
-            // Vamos apenas cobrar e pode ficar negativo, ou a regra é bloquear se não tiver?
-            // Como é um banco simulado, se o estorno for aprovado, o sistema apenas debita mesmo que fique negativo ($receiver).
-            // Porém o User model ou Service de user precisará permitir saldo negativo ou tratar isso.
-            // Para manter simples, debitamos o valor.
-            
-            $newReceiverBalance = $receiver->balance - $transaction->amount;
-            $this->userRepository->update($receiver->id, ['balance' => $newReceiverBalance]);
+            if ($transaction->type === 'transfer') {
+                $sender = $this->userRepository->findById($transaction->sender_id);
 
-            $newSenderBalance = $sender->balance + $transaction->amount;
-            $this->userRepository->update($sender->id, ['balance' => $newSenderBalance]);
+                $newReceiverBalance = $receiver->balance - $transaction->amount;
+                $this->userRepository->update($receiver->id, ['balance' => $newReceiverBalance]);
 
-            $transaction->update([
-                'reversal_status' => 'approved',
-            ]);
+                $newSenderBalance = $sender->balance + $transaction->amount;
+                $this->userRepository->update($sender->id, ['balance' => $newSenderBalance]);
 
-            // Cria uma nova transação que registra a devolução de forma clara
-            $this->transactionRepository->create([
-                'sender_id' => $receiver->id,
-                'receiver_id' => $sender->id,
-                'amount' => $transaction->amount,
-                'type' => 'transfer',
-                'status' => 'completed',
-                'notes' => 'Estorno da transação #' . $transaction->id,
-                'related_transaction_id' => $transaction->id,
-            ]);
+                $transaction->update([
+                    'reversal_status' => 'approved',
+                ]);
+
+                // Cria uma nova transação que registra a devolução de forma clara
+                $this->transactionRepository->create([
+                    'sender_id' => $receiver->id,
+                    'receiver_id' => $sender->id,
+                    'amount' => $transaction->amount,
+                    'type' => 'transfer',
+                    'status' => 'completed',
+                    'notes' => 'Estorno da transação #' . $transaction->id,
+                    'related_transaction_id' => $transaction->id,
+                ]);
+            } elseif ($transaction->type === 'deposit') {
+                $newReceiverBalance = $receiver->balance - $transaction->amount;
+                $this->userRepository->update($receiver->id, ['balance' => $newReceiverBalance]);
+
+                $transaction->update([
+                    'reversal_status' => 'approved',
+                ]);
+
+                // Cria uma nova transação que registra a retirada dos fundos estornados
+                $this->transactionRepository->create([
+                    'sender_id' => $receiver->id,
+                    'receiver_id' => null, // O dinheiro é retirado do sistema
+                    'amount' => $transaction->amount,
+                    'type' => 'reversal', // O enum suporta 'reversal'
+                    'status' => 'completed',
+                    'notes' => 'Estorno do depósito #' . $transaction->id,
+                    'related_transaction_id' => $transaction->id,
+                ]);
+            }
 
             return $transaction;
         });

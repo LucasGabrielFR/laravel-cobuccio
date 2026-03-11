@@ -63,6 +63,7 @@
                 @foreach($transactions as $transaction)
                     @php
                         $isDeposit = $transaction->type === 'deposit';
+                        $isReversal = $transaction->type === 'reversal';
                         $isReceiver = $transaction->receiver_id === $user->id;
                         $isPositive = $isDeposit || $isReceiver;
                     @endphp
@@ -81,6 +82,8 @@
                                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                                     @if($isDeposit)
                                         Depósito via PIX
+                                    @elseif($isReversal)
+                                        Estorno de Depósito PIX
                                     @elseif($isReceiver)
                                         Transferência recebida de {{ $transaction->sender->name }}
                                     @else
@@ -96,7 +99,7 @@
                             <p class="text-sm font-bold {{ $isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                 {{ $isPositive ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}
                             </p>
-                            @if(!$isPositive && $transaction->type === 'transfer')
+                            @if((!$isPositive && $transaction->type === 'transfer') || $transaction->type === 'deposit')
                                 @if($transaction->reversal_status === 'none')
                                     <button wire:click="openReversalModal({{ $transaction->id }})" class="text-[10px] text-orange-500 hover:text-orange-600 uppercase font-semibold tracking-wider hover:underline transition-all cursor-pointer">
                                         Solicitar Estorno
