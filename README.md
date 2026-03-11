@@ -34,11 +34,12 @@ O sistema de autenticação foi construído do zero utilizando Livewire, prioriz
 *   **Rate Limiting (Throttle):** Proteção contra ataques de força bruta no login. O sistema limita 5 tentativas por e-mail/IP em um determinado intervalo de tempo antes de bloquear novas tentativas temporariamente.
 *   **Controle de Estado do Usuário:** Somente usuários com `is_active = true` podem autenticar. Se um administrador desativar uma conta no painel, o acesso é revogado imediatamente.
 *   **Proteção de Sessão:** Implementação de `session()->regenerate()` após login e cadastro para prevenir ataques de *Session Fixation*.
-*   **Políticas de Senha Forte:** Implementação de regras rigorosas para criação de senhas:
+*   **Políticas de Senha Forte:** Implementação de regras rigorosas para criação de senhas pelos usuários:
     *   Mínimo de 8 caracteres.
     *   Obrigatório pelo menos uma letra maiúscula e uma minúscula.
     *   Obrigatório pelo menos um número.
     *   Verificação contra senhas vazadas (Data Leaks) no registro.
+*   **Privilégio Administrativo:** Administradores possuem autoridade para definir senhas simplificadas ao criar ou editar usuários manualmente no dashboard, ignorando as restrições de complexidade impostas aos clientes finais.
 *   **Localização de Alertas:** Todas as mensagens de erro de validação de segurança foram traduzidas para o português brasileiro.
 *   **Prevenção contra CSRF:** Proteção nativa presente em todos os formulários e solicitações Livewire.
 
@@ -95,3 +96,26 @@ npm run dev
 ```
 
 Abra em seu navegador em `http://localhost:8000`
+## 👥 Perfis e Permissões
+
+O sistema implementa **RBAC (Role-Based Access Control)** via Middleware customizado (`EnsureUserHasRole`), dividindo a experiência em duas áreas isoladas:
+
+*   **Administrador (`admin`):** Acesso total ao Dashboard de gerenciamento de usuários, estatísticas globais do sistema, ativação/desativação de contas e alteração de perfis.
+*   **Cliente (`client`):** Acesso exclusivo à área de "Minha Carteira", onde pode gerenciar seu saldo, realizar depósitos e transferências.
+*   **Redirecionamento Inteligente:** O sistema possui uma rota de entrada única (`/dashboard`) que identifica o perfil do usuário logado e o catapulta automaticamente para a visão correta de sua função.
+
+## 💰 Funcionalidades Financeiras
+
+O motor financeiro foi desenhado para simular um ambiente bancário real com alta precisão e segurança:
+
+### 📥 Depósitos (Simulação PIX)
+A entrada de fundos no sistema utiliza um fluxo de UX inspirado em aplicativos de bancos digitais modernos:
+1.  **Modal em 2 Etapas:** O usuário informa o valor desejado (com validação em tempo real).
+2.  **Geração de Chave:** O sistema gera um **PIX Copia e Cola** fictício (Hash baseada em UUID) e um QR Code visual.
+3.  **Copia e Cola Inteligente:** Um botão interativo com feedback visual ("Copiado!") agiliza o processo de simulação.
+4.  **Simulação de Confirmação:** Um gatilho manual permite "confirmar" o pagamento do App do banco para que o saldo entre na carteira instantaneamente.
+
+### 🛡️ Integridade e Segurança das Transações
+*   **Precisão Monetária:** Todos os valores são processados e armazenados em **Centavos (BigInteger)**. Isso elimina erros clássicos de arredondamento de ponto flutuante em operações financeiras.
+*   **Atomicidade (Transactions):** O registro de uma transação e a atualização do saldo do usuário ocorrem dentro de uma **Database Transaction**. Se um dos passos falhar, o banco sofre um `rollback` automático, impedindo que o dinheiro suma ou que um saldo seja gerado sem registro no extrato.
+*   **Histórico Imutável:** Cada movimentação gera um registro único na tabela `transactions`, vinculado ao usuário e com selo de data/hora (timestamps), garantindo auditoria futura.

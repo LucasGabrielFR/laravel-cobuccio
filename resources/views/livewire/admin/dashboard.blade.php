@@ -10,15 +10,30 @@
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
                 Dashboard
             </h1>
-            <p class="text-slate-500 dark:text-slate-400 mt-1">Visão geral do sistema e controle de usuários.</p>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
+                Olá, <span class="font-semibold text-slate-700 dark:text-slate-200">{{ Auth::user()->name }}</span>.
+                <span class="block text-xs opacity-75">{{ Auth::user()->email }}</span>
+            </p>
         </div>
         
         <div class="flex items-center gap-3">
+            <div class="hidden md:flex flex-col items-end mr-4 pr-4 border-r border-slate-200 dark:border-slate-700">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Meu Saldo</span>
+                <span class="text-lg font-bold text-slate-900 dark:text-white">R$ {{ number_format($currentUser->balance / 100, 2, ',', '.') }}</span>
+            </div>
+            
+            <button wire:click="openDepositModal" class="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 transition-all active:scale-90" title="Depositar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+            </button>
+            <button wire:click="openTransferModal" class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Transferir">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            </button>
+
             <button wire:click="logout" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 Sair
             </button>
-            <button wire:click="create" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm font-medium">
+            <button wire:click="create" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Novo Usuário
             </button>
@@ -48,8 +63,8 @@
         </x-admin.stat-card>
 
         <x-admin.stat-card 
-            title="Saldo Transacionado" 
-            value="Em breve" 
+            title="Meu Saldo" 
+            value="R$ {{ number_format($currentUser->balance / 100, 2, ',', '.') }}" 
             color="indigo"
         >
             <x-slot name="icon">
@@ -166,6 +181,81 @@
             </div>
         @endif
     </div>
+
+    <!-- Global Transactions Table -->
+    <div class="bg-white dark:bg-slate-800/90 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden mt-8">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700/60">
+            <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Histórico Global de Transações</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Visão geral de todas as movimentações do sistema.</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/20 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">Data/Hora</th>
+                        <th class="px-6 py-4 font-medium">Tipo</th>
+                        <th class="px-6 py-4 font-medium">Origem</th>
+                        <th class="px-6 py-4 font-medium">Destino</th>
+                        <th class="px-6 py-4 font-medium text-right">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    @forelse($transactions as $transaction)
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                <div class="font-medium text-slate-700 dark:text-slate-300">{{ $transaction->created_at->format('d/m/Y') }}</div>
+                                <div class="text-xs">{{ $transaction->created_at->format('H:i:s') }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($transaction->type === 'deposit')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                                        Depósito PIX
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                                        Transferência
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($transaction->type === 'deposit')
+                                    <span class="text-slate-400 dark:text-slate-500 italic">Sistema (PIX)</span>
+                                @else
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{{ substr($transaction->sender->name, 0, 1) }}</div>
+                                        <span class="font-medium text-slate-700 dark:text-slate-300">{{ $transaction->sender->name }}</span>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">{{ substr($transaction->receiver->name, 0, 1) }}</div>
+                                    <span class="font-medium text-slate-700 dark:text-slate-300">{{ $transaction->receiver->name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold {{ $transaction->type === 'deposit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                                {{ $transaction->type === 'deposit' ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/20">
+                                Nenhuma transação registrada no sistema.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($transactions->hasPages())
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/20">
+                {{ $transactions->links() }}
+            </div>
+        @endif
+    </div>
     <!-- User Form Modal -->
     <x-modal wire:model="showModal" :title="$editingUserId ? 'Editar Usuário' : 'Novo Usuário'">
         <form wire:submit="save">
@@ -201,7 +291,10 @@
                 <button type="button" wire:click="$set('showModal', false)" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700">
                     Cancelar
                 </button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600">
+                <button type="button" wire:click="save" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <span wire:loading wire:target="save">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </span>
                     Salvar
                 </button>
             </x-slot>
@@ -230,4 +323,6 @@
             </button>
         </x-slot>
     </x-modal>
+
+    @include('livewire.partials.wallet-modals', ['balance' => $currentUser->balance])
 </div>

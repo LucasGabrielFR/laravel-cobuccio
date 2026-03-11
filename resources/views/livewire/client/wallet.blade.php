@@ -10,7 +10,10 @@
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300">
                 Minha Carteira
             </h1>
-            <p class="text-slate-500 dark:text-slate-400 mt-1">Bem-vindo, {{ $user->name }}.</p>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
+                Bem-vindo, <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $user->name }}</span>.
+                <span class="block text-xs opacity-75">{{ $user->email }}</span>
+            </p>
         </div>
         
         <div class="flex items-center gap-3">
@@ -54,111 +57,67 @@
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700/60">
             <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Transações Recentes</h2>
         </div>
-        <div class="p-6 text-center text-slate-500 dark:text-slate-400">
-            <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <p>Histórico de transações será implementado em breve.</p>
-        </div>
+        
+        @if($transactions->count() > 0)
+            <div class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                @foreach($transactions as $transaction)
+                    @php
+                        $isDeposit = $transaction->type === 'deposit';
+                        $isReceiver = $transaction->receiver_id === $user->id;
+                        $isPositive = $isDeposit || $isReceiver;
+                    @endphp
+                    <div class="p-4 sm:px-6 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 {{ $isPositive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400' }}">
+                                @if($isDeposit)
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                                @elseif($isReceiver)
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                @else
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                    @if($isDeposit)
+                                        Depósito via PIX
+                                    @elseif($isReceiver)
+                                        Transferência recebida de {{ $transaction->sender->name }}
+                                    @else
+                                        Transferência enviada para {{ $transaction->receiver->name }}
+                                    @endif
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ $transaction->created_at->format('d/m/Y \à\s H:i') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-sm font-bold {{ $isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                                {{ $isPositive ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}
+                            </p>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">
+                                Concluído
+                            </p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @if($transactions->hasPages())
+                <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700/60">
+                    {{ $transactions->links(data: ['scrollTo' => false]) }}
+                </div>
+            @endif
+        @else
+            <div class="p-10 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center">
+                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-400 dark:text-slate-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <p class="text-sm font-medium">Nenhuma transação encontrada</p>
+                <p class="text-xs mt-1 opacity-70">Seus depósitos e transferências aparecerão aqui.</p>
+            </div>
+        @endif
     </div>
 
-    <!-- Deposit Modal -->
-    <x-modal wire:model="showDepositModal" title="Adicionar Fundos" on-close="closeDepositModal">
-        @if($depositStep === 1)
-            <!-- Step 1: Selecionar Valor -->
-            <div class="space-y-4">
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Informe o valor que deseja depositar na sua carteira. A transferência deve ser feita via PIX.
-                </p>
-                <x-input-group 
-                    id="depositAmount" 
-                    label="Valor do Depósito (R$)" 
-                    type="number" 
-                    step="0.01" 
-                    min="1" 
-                    wire:model="depositAmount" 
-                    placeholder="0.00" 
-                    autofocus 
-                />
-            </div>
-            
-            <x-slot name="footer">
-                <button wire:click="closeDepositModal" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300">
-                    Cancelar
-                </button>
-                <button wire:click="generatePix" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    Avançar para Pagamento
-                </button>
-            </x-slot>
-
-        @elseif($depositStep === 2)
-            <!-- Step 2: Efetuar Pagamento PIX -->
-            <div class="space-y-5 text-center flex flex-col items-center">
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Sua chave PIX Copia e Cola foi gerada! No mundo real você usaria seu app do banco para pagar.
-                </p>
-
-                <div class="p-4 bg-white dark:bg-slate-800 border-2 border-emerald-500 border-dashed rounded-xl w-48 h-48 flex items-center justify-center">
-                    <!-- Fake QR Code SVG -->
-                    <svg class="w-full h-full text-slate-800 dark:text-slate-300" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h-3v2h3v-2zm-3 4h3v2h-3v-2zm-3-2h2v2h-2v-2zm0-2h2v2h-2v-2zm3-2h-3v2h3v-2zm3 2h2v2h-2v-2zm-6 4h2v2h-2v-2zm3 2h-3v2h3v-2zm3-2h2v2h-2v-2zm0 2h-2v2h2v-2z" />
-                    </svg>
-                </div>
-
-                <div class="w-full" x-data="{ copied: false }">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 text-left">PIX Copia e Cola:</label>
-                    <div class="relative group">
-                        <textarea 
-                            readonly 
-                            id="pixKeyArea"
-                            class="block w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-600 dark:text-slate-300 focus:outline-none resize-none overflow-hidden leading-relaxed shadow-inner"
-                            rows="3"
-                        >{{ $pixKey }}</textarea>
-                        
-                        <button 
-                            @click="
-                                navigator.clipboard.writeText($refs.pixInput.value); 
-                                copied = true; 
-                                setTimeout(() => copied = false, 2000)
-                            "
-                            x-ref="pixInput"
-                            value="{{ $pixKey }}"
-                            type="button"
-                            class="absolute top-2 right-2 p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-sm transition-all active:scale-90 flex items-center gap-1.5"
-                            :class="{ 'bg-blue-500 hover:bg-blue-600': copied }"
-                        >
-                            <template x-if="!copied">
-                                <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                    Copiar
-                                </span>
-                            </template>
-                            <template x-if="copied">
-                                <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                    Copiado!
-                                </span>
-                            </template>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <x-slot name="footer">
-                <div class="flex w-full justify-between items-center">
-                    <button wire:click="$set('depositStep', 1)" class="px-4 py-2 border-none rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Voltar
-                    </button>
-                    <!-- Simulated confirmation button since this is a test/demo app -->
-                    <button wire:click="confirmDeposit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all relative overflow-hidden group">
-                        <span class="relative z-10 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Simular Confirmação do App do Banco
-                        </span>
-                        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    </button>
-                </div>
-            </x-slot>
-        @endif
-    </x-modal>
+    @include('livewire.partials.wallet-modals', ['balance' => $user->balance])
 </div>

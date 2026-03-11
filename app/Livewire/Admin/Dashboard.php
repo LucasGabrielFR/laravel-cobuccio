@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Services\UserService;
+use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -10,16 +11,21 @@ use Livewire\WithPagination;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Url;
 
+use App\Livewire\Traits\InteractionWithWallet;
+
 class Dashboard extends Component
 {
     use WithPagination;
+    use InteractionWithWallet;
 
     #[Layout('layouts.app')]
-    public function render(UserService $userService)
+    public function render(UserService $userService, TransactionService $transactionService)
     {
         return view('livewire.admin.dashboard', [
             'users' => $userService->getPaginatedUsers(10, $this->search, $this->filterActive === 'active'),
             'stats' => $userService->getDashboardStats(),
+            'currentUser' => $userService->getUser(Auth::id()),
+            'transactions' => $transactionService->getTransactions(null, 5),
         ]);
     }
 
@@ -60,10 +66,7 @@ class Dashboard extends Component
             'email' => 'required|email|unique:users,email,' . $this->editingUserId,
             'password' => [
                 $this->editingUserId ? 'nullable' : 'required',
-                Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers(),
+                'string',
             ],
             'role' => 'required|in:admin,client',
             'is_active' => 'boolean',
@@ -74,10 +77,6 @@ class Dashboard extends Component
     {
         return [
             'password.required' => 'A senha é obrigatória.',
-            'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
-            'password.letters' => 'A senha deve conter ao menos uma letra.',
-            'password.mixed' => 'A senha deve conter letras maiúsculas e minúsculas.',
-            'password.numbers' => 'A senha deve conter ao menos um número.',
         ];
     }
 

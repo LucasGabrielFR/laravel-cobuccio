@@ -16,4 +16,18 @@ class TransactionRepository implements TransactionRepositoryInterface
     {
         return Transaction::find($id);
     }
+
+    public function getPaginatedTransactions(?int $userId = null, int $perPage = 10)
+    {
+        $query = Transaction::with(['sender', 'receiver'])->latest();
+
+        if ($userId) {
+            $query->where(function ($q) use ($userId) {
+                $q->where('sender_id', $userId)
+                  ->orWhere('receiver_id', $userId);
+            });
+        }
+
+        return $query->paginate($perPage);
+    }
 }
