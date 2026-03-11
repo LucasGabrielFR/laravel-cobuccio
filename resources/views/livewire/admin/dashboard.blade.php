@@ -8,7 +8,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <button wire:click="create" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 text-sm font-medium">
+            <button wire:click="create" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Novo Usuário
             </button>
@@ -116,10 +116,10 @@
                                 {{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button wire:click="edit({{ $user->id }})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1" title="Editar">
+                                <button wire:click="edit({{ $user->id }})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 active:scale-90 transition-all duration-200 p-1" title="Editar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
-                                <button wire:click="confirmToggleStatus({{ $user->id }})" class="{{ $user->is_active ? 'text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300' : 'text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300' }} transition-colors p-1 ml-2" title="{{ $user->is_active ? 'Desativar' : 'Ativar' }}">
+                                <button wire:click="confirmToggleStatus({{ $user->id }})" class="{{ $user->is_active ? 'text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300' : 'text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300' }} active:scale-90 transition-all duration-200 p-1 ml-2" title="{{ $user->is_active ? 'Desativar' : 'Ativar' }}">
                                     @if($user->is_active)
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                     @else
@@ -150,7 +150,7 @@
             <h3 class="text-lg font-medium text-slate-900 dark:text-white" id="modal-title">
                 {{ $editingUserId ? 'Editar Usuário' : 'Novo Usuário' }}
             </h3>
-            <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 focus:outline-none">
+            <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 active:scale-90 transition-all duration-200 focus:outline-none">
                 <span class="sr-only">Fechar</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
@@ -186,10 +186,10 @@
             </div>
             
             <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-end gap-3">
-                <button type="button" wire:click="$set('showModal', false)" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">
+                <button type="button" wire:click="$set('showModal', false)" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700">
                     Cancelar
                 </button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600">
                     Salvar
                 </button>
             </div>
@@ -210,10 +210,10 @@
             </p>
         </div>
         <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-center gap-3">
-            <button wire:click="cancelToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">
+            <button wire:click="cancelToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700">
                 Cancelar
             </button>
-            <button wire:click="performToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg shadow-sm hover:bg-orange-700 focus:outline-none dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors">
+            <button wire:click="performToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg shadow-sm hover:bg-orange-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-orange-500 dark:hover:bg-orange-600">
                 Confirmar
             </button>
         </div>
