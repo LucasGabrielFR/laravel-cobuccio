@@ -3,9 +3,12 @@
 namespace App\Livewire\Admin;
 
 use App\Services\UserService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rules\Password;
+use Livewire\Attributes\Url;
 
 class Dashboard extends Component
 {
@@ -15,9 +18,25 @@ class Dashboard extends Component
     public function render(UserService $userService)
     {
         return view('livewire.admin.dashboard', [
-            'users' => $userService->getPaginatedUsers(10),
+            'users' => $userService->getPaginatedUsers(10, $this->search, $this->filterActive === 'active'),
             'stats' => $userService->getDashboardStats(),
         ]);
+    }
+
+    #[Url(history: true)]
+    public $search = '';
+
+    #[Url(history: true)]
+    public $filterActive = 'all'; // all, active
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterActive()
+    {
+        $this->resetPage();
     }
 
     // Modal & Form State
@@ -39,9 +58,26 @@ class Dashboard extends Component
         return [
             'name' => 'required|min:3',
             'email' => 'required|email|unique:users,email,' . $this->editingUserId,
-            'password' => $this->editingUserId ? 'nullable|min:6' : 'required|min:6',
+            'password' => [
+                $this->editingUserId ? 'nullable' : 'required',
+                Password::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers(),
+            ],
             'role' => 'required|in:admin,client',
             'is_active' => 'boolean',
+        ];
+    }
+
+    protected function messages()
+    {
+        return [
+            'password.required' => 'A senha é obrigatória.',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
+            'password.letters' => 'A senha deve conter ao menos uma letra.',
+            'password.mixed' => 'A senha deve conter letras maiúsculas e minúsculas.',
+            'password.numbers' => 'A senha deve conter ao menos um número.',
         ];
     }
 
@@ -114,5 +150,14 @@ class Dashboard extends Component
     {
         $this->showConfirmModal = false;
         $this->confirmingUserId = null;
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
+
+        return redirect('/login');
     }
 }

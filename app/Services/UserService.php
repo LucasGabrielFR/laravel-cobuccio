@@ -10,15 +10,16 @@ class UserService
         protected UserRepositoryInterface $userRepository
     ) {}
 
-    public function getPaginatedUsers(int $perPage = 10)
+    public function getPaginatedUsers(int $perPage = 10, ?string $search = null, ?bool $activeOnly = null)
     {
-        return $this->userRepository->getAllPaginated($perPage);
+        return $this->userRepository->getAllPaginated($perPage, $search, $activeOnly);
     }
 
     public function getDashboardStats(): array
     {
         return [
             'total_users' => $this->userRepository->getTotalUsersCount(),
+            'active_users' => $this->userRepository->getActiveUsersCount(),
         ];
     }
 

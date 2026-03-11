@@ -27,6 +27,21 @@ O projeto foge do padrão MVC simples para adotar camadas bem definidas de abstr
 4. **Pivotando do Supabase para Nativo**:
    O projeto chegou a possuir integração profunda com as SDKs e Banco de Dados Supabase. Em prol de maior simplicidade e controle total da stack local pelo Laravel Eloquent, todas as referências ao Supabase foram defenestradas. Temos um produto 100% autossuficiente.
 
+## 🔒 Segurança e Autenticação
+
+O sistema de autenticação foi construído do zero utilizando Livewire, priorizando a segurança e a experiência do usuário:
+
+*   **Rate Limiting (Throttle):** Proteção contra ataques de força bruta no login. O sistema limita 5 tentativas por e-mail/IP em um determinado intervalo de tempo antes de bloquear novas tentativas temporariamente.
+*   **Controle de Estado do Usuário:** Somente usuários com `is_active = true` podem autenticar. Se um administrador desativar uma conta no painel, o acesso é revogado imediatamente.
+*   **Proteção de Sessão:** Implementação de `session()->regenerate()` após login e cadastro para prevenir ataques de *Session Fixation*.
+*   **Políticas de Senha Forte:** Implementação de regras rigorosas para criação de senhas:
+    *   Mínimo de 8 caracteres.
+    *   Obrigatório pelo menos uma letra maiúscula e uma minúscula.
+    *   Obrigatório pelo menos um número.
+    *   Verificação contra senhas vazadas (Data Leaks) no registro.
+*   **Localização de Alertas:** Todas as mensagens de erro de validação de segurança foram traduzidas para o português brasileiro.
+*   **Prevenção contra CSRF:** Proteção nativa presente em todos os formulários e solicitações Livewire.
+
 ## 🛠️ Como Executar o Projeto
 
 A arquitetura de desenvolvimento adota uma abordagem **Híbrida de Alta Performance**, onde Serviços de Infra (Banco e Redis) utilizam Docker, mas Ferramentas de Compilação (PHP, Vite) usam o Host Nativo evadindo lentidão de sistemas de arquivos em disco sincronizado.

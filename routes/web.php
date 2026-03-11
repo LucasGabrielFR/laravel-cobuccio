@@ -3,7 +3,14 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('/admin/dashboard'); // temp redirect for dev
+    return redirect('/login');
 });
 
-Route::get('/admin/dashboard', \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', \App\Livewire\Auth\Login::class)->name('login');
+    Route::get('/register', \App\Livewire\Auth\Register::class)->name('register');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+});
