@@ -53,7 +53,11 @@ class UserRepository implements UserRepositoryInterface
 
     public function update(int $id, array $data): bool
     {
-        return User::where('id', $id)->update($data);
+        $user = $this->findById($id);
+        if ($user) {
+            return $user->update($data);
+        }
+        return false;
     }
 
     public function delete(int $id): bool

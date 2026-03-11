@@ -96,6 +96,24 @@ npm run dev
 ```
 
 Abra em seu navegador em `http://localhost:8000`
+### 4. Dados de Demonstração (Seeds)
+
+O projeto conta com uma base de dados rica "pré-fabricada" contendo Administradores, Clientes, saldos e até solicitações de estorno pendentes para você testar a interface imediatamente sem precisar popular dados manualmente.
+
+Para formatar o banco e injetar esses dados, rode:
+```bash
+php artisan migrate:fresh --seed
+```
+
+**Credenciais de Acesso Prontas:**
+
+| Perfil | E-mail de Acesso | Senha |
+|---|---|---|
+| **Admin** | `admin@wallet.com` | `admin123` |
+| **Cliente 1** | `alice@wallet.com` | `senha123` |
+| **Cliente 2** | `bob@wallet.com` | `senha123` |
+| **Cliente 3** | `charlie@wallet.com` | `senha123` |
+
 ## 👥 Perfis e Permissões
 
 O sistema implementa **RBAC (Role-Based Access Control)** via Middleware customizado (`EnsureUserHasRole`), dividindo a experiência em duas áreas isoladas:
