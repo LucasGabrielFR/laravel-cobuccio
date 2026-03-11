@@ -1,4 +1,10 @@
 <div class="p-6 md:p-10 space-y-8">
+    @if (session()->has('message'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" class="fixed top-5 right-5 z-[100] bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg border border-blue-500 flex items-center gap-3 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="font-medium">{{ session('message') }}</span>
+        </div>
+    @endif
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
@@ -160,20 +166,10 @@
             </div>
         @endif
     </div>
-    <!-- Create/Edit Modal Component -->
-    <x-modal :show="$showModal" maxWidth="md">
-        <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
-            <h3 class="text-lg font-medium text-slate-900 dark:text-white" id="modal-title">
-                {{ $editingUserId ? 'Editar Usuário' : 'Novo Usuário' }}
-            </h3>
-            <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 active:scale-90 transition-all duration-200 focus:outline-none">
-                <span class="sr-only">Fechar</span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        
+    <!-- User Form Modal -->
+    <x-modal wire:model="showModal" :title="$editingUserId ? 'Editar Usuário' : 'Novo Usuário'">
         <form wire:submit="save">
-            <div class="p-6 space-y-4">
+            <div class="space-y-4">
                 <!-- Nome -->
                 <x-input-group id="name" model="name" label="Nome" />
 
@@ -201,37 +197,37 @@
                 </div>
             </div>
             
-            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-end gap-3">
+            <x-slot name="footer">
                 <button type="button" wire:click="$set('showModal', false)" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700">
                     Cancelar
                 </button>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600">
                     Salvar
                 </button>
-            </div>
+            </x-slot>
         </form>
     </x-modal>
 
-    <!-- Confirm Modal Component -->
-    <x-modal :show="$showConfirmModal" maxWidth="sm">
-        <div class="p-6 text-center">
+    <!-- Confirm Toggle Status Modal -->
+    <x-modal wire:model="showConfirmModal" title="Confirmar Ação">
+        <div class="space-y-3">
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
                 <svg class="h-8 w-8 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
             </div>
-            <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-2" id="confirm-modal-title">Confirmar Ação</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Você tem certeza que deseja alterar o status deste usuário?
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center">
+                Você tem certeza que deseja alterar o status deste usuário? Esta ação impactará o acesso imediato ao sistema.
             </p>
         </div>
-        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-center gap-3">
+
+        <x-slot name="footer">
             <button wire:click="cancelToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700">
                 Cancelar
             </button>
-            <button wire:click="performToggleStatus" type="button" class="px-4 py-2 w-full text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg shadow-sm hover:bg-orange-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-orange-500 dark:hover:bg-orange-600">
+            <button wire:click="performToggleStatus" type="button" class="px-5 py-2 w-full text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600">
                 Confirmar
             </button>
-        </div>
+        </x-slot>
     </x-modal>
 </div>

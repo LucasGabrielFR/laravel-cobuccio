@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('/login');
+    return redirect('/dashboard');
 });
 
 Route::middleware('guest')->group(function () {
@@ -12,5 +12,21 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/admin/dashboard', \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+    // Redirecionamento inteligente baseado no perfil
+    Route::get('/dashboard', function () {
+        if (auth()->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('client.wallet');
+    })->name('dashboard');
+
+    // Rotas de Admin
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/dashboard', \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+    });
+
+    // Rotas de Cliente
+    Route::middleware('role:client')->group(function () {
+        Route::get('/client/wallet', \App\Livewire\Client\Wallet::class)->name('client.wallet');
+    });
 });

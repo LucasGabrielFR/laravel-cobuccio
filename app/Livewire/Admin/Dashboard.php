@@ -120,8 +120,10 @@ class Dashboard extends Component
 
         if ($this->editingUserId) {
             $userService->updateUser($this->editingUserId, $data);
+            session()->flash('message', 'Usuário atualizado com sucesso!');
         } else {
             $userService->createUser($data);
+            session()->flash('message', 'Usuário criado com sucesso!');
         }
 
         $this->showModal = false;
@@ -139,7 +141,9 @@ class Dashboard extends Component
         if ($this->confirmingUserId) {
             $user = $userService->getUser($this->confirmingUserId);
             if ($user) {
-                $userService->updateUser($this->confirmingUserId, ['is_active' => !$user->is_active]);
+                $newStatus = !$user->is_active;
+                $userService->updateUser($this->confirmingUserId, ['is_active' => $newStatus]);
+                session()->flash('message', 'Status do usuário alterado para ' . ($newStatus ? 'Ativo' : 'Inativo') . '!');
             }
         }
         $this->showConfirmModal = false;

@@ -47,7 +47,7 @@ class Login extends Component
             RateLimiter::clear($throttleKey);
             session()->regenerate(); // Prevent session fixation
 
-            return redirect()->intended('/admin/dashboard');
+            return redirect()->intended('/dashboard');
         }
 
         RateLimiter::hit($throttleKey);

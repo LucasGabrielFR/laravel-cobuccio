@@ -66,6 +66,6 @@ class Register extends Component
         Auth::login($user);
         session()->regenerate(); // Prevent session fixation
 
-        return redirect()->intended('/admin/dashboard');
+        return redirect()->intended('/dashboard');
     }
 }

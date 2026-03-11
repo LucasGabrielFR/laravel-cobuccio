@@ -1,4 +1,8 @@
-@props(['id', 'label', 'type' => 'text', 'model'])
+@props(['id', 'label', 'type' => 'text', 'model' => null])
+
+@php
+    $modelName = $model ?? $attributes->wire('model')->value();
+@endphp
 
 <div x-data="{ show: false }">
     <label for="{{ $id }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -9,10 +13,10 @@
         <input 
             @if($type === 'password') :type="show ? 'text' : 'password'" @else type="{{ $type }}" @endif
             id="{{ $id }}" 
-            wire:model="{{ $model }}" 
+            @if($model) wire:model="{{ $model }}" @endif
             {{ $attributes->merge(['class' => 'block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:text-slate-100' . ($type === 'password' ? ' pr-10' : '')]) }}
         >
-
+        
         @if($type === 'password')
             <button 
                 type="button" 
@@ -30,7 +34,9 @@
         @endif
     </div>
     
-    @error($model) 
-        <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> 
-    @enderror
+    @if($modelName)
+        @error($modelName) 
+            <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> 
+        @enderror
+    @endif
 </div>
