@@ -9,3 +9,26 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@layer base {
+    button, 
+    a, 
+    [role="button"], 
+    [wire\:click],
+    [x-on\:click],
+    [x-on\:click\.prevent],
+    [x-on\:click\.stop],
+    input[type="submit"],
+    input[type="button"],
+    label[for],
+    select,
+    details summary {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [wire\:loading][wire\:target],
+    .cursor-not-allowed {
+        cursor: not-allowed;
+    }
+}

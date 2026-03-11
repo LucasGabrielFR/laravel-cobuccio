@@ -98,7 +98,7 @@
                             </p>
                             @if(!$isPositive && $transaction->type === 'transfer')
                                 @if($transaction->reversal_status === 'none')
-                                    <button wire:click="openReversalModal({{ $transaction->id }})" class="text-[10px] text-orange-500 hover:text-orange-600 uppercase font-semibold tracking-wider hover:underline transition-all">
+                                    <button wire:click="openReversalModal({{ $transaction->id }})" class="text-[10px] text-orange-500 hover:text-orange-600 uppercase font-semibold tracking-wider hover:underline transition-all cursor-pointer">
                                         Solicitar Estorno
                                     </button>
                                 @elseif($transaction->reversal_status === 'requested')
