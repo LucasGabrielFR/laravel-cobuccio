@@ -17,5 +17,14 @@
         </main>
         
         @livewireScripts
+        <style>
+            @keyframes pulse-slow {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.95; transform: scale(1.005); }
+            }
+            .animate-pulse-slow {
+                animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+        </style>
     </body>
 </html>

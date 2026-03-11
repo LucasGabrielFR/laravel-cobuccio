@@ -73,6 +73,46 @@
         </x-admin.stat-card>
     </div>
 
+    @if($pendingReversals->count() > 0)
+        <!-- Pending Reversals Highlight -->
+        <div class="bg-white dark:bg-slate-800 border-2 border-orange-500 rounded-2xl shadow-lg overflow-hidden animate-pulse-slow">
+            <div class="px-6 py-4 bg-orange-500 flex items-center justify-between">
+                <div class="flex items-center gap-2 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <h2 class="text-lg font-bold">Solicitações de Estorno Pendentes ({{ $pendingReversals->count() }})</h2>
+                </div>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                @foreach($pendingReversals as $reversal)
+                    <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-orange-50/50 dark:hover:bg-orange-900/10 transition-colors">
+                        <div class="flex-1 space-y-2">
+                            <div class="flex items-center gap-3">
+                                <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs font-mono font-bold">#{{ $reversal->id }}</span>
+                                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                    {{ $reversal->sender->name }} solicitou estorno de R$ {{ number_format($reversal->amount/100, 2, ',', '.') }}
+                                </p>
+                            </div>
+                            <div class="p-3 bg-white dark:bg-slate-900 border border-orange-200 dark:border-orange-800/50 rounded-lg italic text-sm text-slate-600 dark:text-slate-400">
+                                "{{ $reversal->reversal_reason }}"
+                            </div>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                Para: {{ $reversal->receiver->name }} • Realizada em {{ $reversal->created_at->format('d/m/Y H:i') }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <button wire:click="approveReversal({{ $reversal->id }})" class="flex-1 md:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold shadow-sm active:scale-95 transition-all">
+                                Aprovar
+                            </button>
+                            <button wire:click="rejectReversal({{ $reversal->id }})" class="flex-1 md:flex-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-sm active:scale-95 transition-all">
+                                Negar
+                            </button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <!-- Users Table -->
     <div class="bg-white dark:bg-slate-800/90 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden mt-8">
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -198,6 +238,7 @@
                         <th class="px-6 py-4 font-medium">Origem</th>
                         <th class="px-6 py-4 font-medium">Destino</th>
                         <th class="px-6 py-4 font-medium text-right">Valor</th>
+                        <th class="px-6 py-4 font-medium text-center">Estorno</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -238,6 +279,29 @@
                             </td>
                             <td class="px-6 py-4 text-right font-bold {{ $transaction->type === 'deposit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                 {{ $transaction->type === 'deposit' ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if($transaction->reversal_status === 'requested')
+                                    <div class="flex flex-col gap-2 relative group items-center">
+                                        <div class="flex items-center gap-2">
+                                            <button wire:click="approveReversal({{ $transaction->id }})" title="Aprovar Estorno" class="p-1 text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </button>
+                                            <button wire:click="rejectReversal({{ $transaction->id }})" title="Negar Estorno" class="p-1 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </div>
+                                        <span class="absolute right-0 bottom-full mb-2 w-48 text-xs bg-slate-800 text-white p-2 rounded shadow-lg invisible group-hover:visible z-10 text-left">
+                                            <strong>Motivo:</strong> {{ $transaction->reversal_reason }}
+                                        </span>
+                                    </div>
+                                @elseif($transaction->reversal_status === 'approved')
+                                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Aprovado</span>
+                                @elseif($transaction->reversal_status === 'rejected')
+                                    <span class="text-[10px] font-bold text-red-600 uppercase">Negado</span>
+                                @else
+                                    <span class="text-slate-300">-</span>
+                                @endif
                             </td>
                         </tr>
                     @empty

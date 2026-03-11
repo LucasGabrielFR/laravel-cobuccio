@@ -12,6 +12,8 @@ class Transaction extends Model
         'amount',
         'type',
         'status',
+        'reversal_status',
+        'reversal_reason',
         'related_transaction_id',
         'notes',
     ];

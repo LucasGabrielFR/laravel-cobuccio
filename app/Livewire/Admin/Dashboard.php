@@ -26,6 +26,7 @@ class Dashboard extends Component
             'stats' => $userService->getDashboardStats(),
             'currentUser' => $userService->getUser(Auth::id()),
             'transactions' => $transactionService->getTransactions(null, 5),
+            'pendingReversals' => $transactionService->getPendingReversals(),
         ]);
     }
 
@@ -153,6 +154,26 @@ class Dashboard extends Component
     {
         $this->showConfirmModal = false;
         $this->confirmingUserId = null;
+    }
+
+    public function approveReversal(int $transactionId, TransactionService $transactionService)
+    {
+        try {
+            $transactionService->approveReversal($transactionId);
+            session()->flash('message', 'Estorno aprovado com sucesso.');
+        } catch (\Exception $e) {
+            session()->flash('message', 'Erro ao aprovar estorno: ' . $e->getMessage());
+        }
+    }
+
+    public function rejectReversal(int $transactionId, TransactionService $transactionService)
+    {
+        try {
+            $transactionService->rejectReversal($transactionId);
+            session()->flash('message', 'Estorno negado.');
+        } catch (\Exception $e) {
+            session()->flash('message', 'Erro ao negar estorno: ' . $e->getMessage());
+        }
     }
 
     public function logout()

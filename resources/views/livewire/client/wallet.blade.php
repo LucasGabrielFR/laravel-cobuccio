@@ -92,13 +92,33 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="text-right shrink-0">
+                        <div class="text-right shrink-0 flex flex-col items-end gap-1">
                             <p class="text-sm font-bold {{ $isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                 {{ $isPositive ? '+' : '-' }} R$ {{ number_format($transaction->amount / 100, 2, ',', '.') }}
                             </p>
-                            <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">
-                                Concluído
-                            </p>
+                            @if(!$isPositive && $transaction->type === 'transfer')
+                                @if($transaction->reversal_status === 'none')
+                                    <button wire:click="openReversalModal({{ $transaction->id }})" class="text-[10px] text-orange-500 hover:text-orange-600 uppercase font-semibold tracking-wider hover:underline transition-all">
+                                        Solicitar Estorno
+                                    </button>
+                                @elseif($transaction->reversal_status === 'requested')
+                                    <span class="text-[10px] text-amber-500 uppercase font-semibold tracking-wider">
+                                        Estorno em Análise
+                                    </span>
+                                @elseif($transaction->reversal_status === 'approved')
+                                    <span class="text-[10px] text-emerald-500 uppercase font-semibold tracking-wider">
+                                        Estornado
+                                    </span>
+                                @elseif($transaction->reversal_status === 'rejected')
+                                    <span class="text-[10px] text-red-500 uppercase font-semibold tracking-wider">
+                                        Estorno Negado
+                                    </span>
+                                @endif
+                            @else
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">
+                                    Concluído
+                                </p>
+                            @endif
                         </div>
                     </div>
                 @endforeach

@@ -23,6 +23,43 @@ trait InteractionWithWallet
     public ?string $recipientName = null;
     public ?int $recipientId = null;
 
+    // Reversal State
+    public bool $showReversalModal = false;
+    public ?int $reversalTransactionId = null;
+    public string $reversalReason = '';
+
+    public function openReversalModal($transactionId)
+    {
+        $this->reset(['reversalReason']);
+        $this->reversalTransactionId = $transactionId;
+        $this->showReversalModal = true;
+    }
+
+    public function closeReversalModal()
+    {
+        $this->showReversalModal = false;
+        $this->reset(['reversalReason', 'reversalTransactionId']);
+    }
+
+    public function requestReversal(TransactionService $transactionService)
+    {
+        $this->validate([
+            'reversalReason' => 'required|min:10|max:255',
+        ], [
+            'reversalReason.required' => 'O motivo do estorno é obrigatório.',
+            'reversalReason.min' => 'O motivo deve ter pelo menos 10 caracteres.',
+            'reversalReason.max' => 'O motivo não pode exceder 255 caracteres.',
+        ]);
+
+        try {
+            $transactionService->requestReversal($this->reversalTransactionId, Auth::id(), $this->reversalReason);
+            $this->closeReversalModal();
+            session()->flash('message', 'Solicitação de estorno enviada com sucesso para análise.');
+        } catch (\Exception $e) {
+            $this->addError('reversalReason', $e->getMessage());
+        }
+    }
+
     public function openDepositModal()
     {
         $this->reset(['depositAmount', 'pixKey']);

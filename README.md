@@ -1,4 +1,4 @@
-# Laravel Cobuccio - Wallet & Admin Dashboard
+# Wallet cobuccio
 
 Este projeto é um sistema de Carteira (Wallet) e Painel Administrativo, desenvolvido com foco em **Clean Architecture**, **SOLID** e uma interface de usuário moderna e premium.
 
@@ -119,3 +119,67 @@ A entrada de fundos no sistema utiliza um fluxo de UX inspirado em aplicativos d
 *   **Precisão Monetária:** Todos os valores são processados e armazenados em **Centavos (BigInteger)**. Isso elimina erros clássicos de arredondamento de ponto flutuante em operações financeiras.
 *   **Atomicidade (Transactions):** O registro de uma transação e a atualização do saldo do usuário ocorrem dentro de uma **Database Transaction**. Se um dos passos falhar, o banco sofre um `rollback` automático, impedindo que o dinheiro suma ou que um saldo seja gerado sem registro no extrato.
 *   **Histórico Imutável:** Cada movimentação gera um registro único na tabela `transactions`, vinculado ao usuário e com selo de data/hora (timestamps), garantindo auditoria futura.
+
+## 📊 Histórico e Governança de Transações
+
+O sistema implementa uma camada de visibilidade e controle granular sobre o fluxo financeiro:
+
+### 📱 Visão do Cliente (Meu Extrato)
+*   **Segmentação Inteligente:** O usuário visualiza apenas as movimentações que lhe pertencem (seus depósitos e suas transferências como remetente ou destinatário).
+*   **Identificação Visual (Color-Coded):**
+    *   **Entradas (+):** Depósitos PIX e Transferências Recebidas em **Verde**.
+    *   **Saídas (-):** Transferências Enviadas em **Vermelho** para facilitar o controle de gastos.
+*   **Paginação:** Extrato otimizado com carregamento paginado para performance em contas com alto volume.
+
+### 👑 Visão Administrativa (Controle Global)
+*   **Audit Trail Completo:** O administrador possui uma tabela mestre com TODAS as transações do sistema em tempo real.
+*   **Identificação de Agentes:** Visualização clara de quem é a "Origem" (Remetente) e o "Destino" (Recebedor) de cada centavo.
+*   **Rastreamento de Depósitos:** Identificação de entradas via "Sistema (PIX)".
+
+## 🔄 Sistema de Estorno sob Análise
+
+Para garantir a reversibilidade e segurança contra erros humanos ou fraudes, implementamos um workflow de estorno:
+
+1.  **Solicitação de Motivo:** O cliente pode solicitar o estorno de qualquer transferência enviada. O sistema exige um **Motivo Detalhado** (mínimo de 10 caracteres).
+2.  **Estado de Pendência:** Durante a análise, a transação original é marcada como "Estorno em Análise", impedindo novas solicitações.
+3.  **Painel de Prioridade Admin:** Solicitações pendentes aparecem com **Destaque Visual (Badge Laranja e Animação Pulse)** no topo da dashboard do Admin.
+4.  **Análise de Justificativa:** O Admin visualiza o motivo escrito pelo usuário diretamente no card de alerta.
+5.  **Aprovação/Reprovação:**
+    *   **Aprovação:** O sistema realiza o *Rollback* financeiro (debitando do destino e creditando na origem) e gera uma **nova transação de estorno** vinculada à original para manter o livro-razão (ledger) consistente.
+    *   **Rejeição:** A transação original volta ao estado normal de "Concluído", e o cliente é notificado visualmente no extrato.
+
+## 🏗️ Modelagem de Dados (ER Diagram)
+
+A estrutura do banco de dados foi projetada para consistência e rastreabilidade:
+
+```mermaid
+erDiagram
+    USERS ||--o{ TRANSACTIONS : "envia (sender_id)"
+    USERS ||--o{ TRANSACTIONS : "recebe (receiver_id)"
+    TRANSACTIONS }|--o| TRANSACTIONS : "relaciona (reversal)"
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        enum role "admin, client"
+        bigint balance "em centavos"
+        boolean is_active
+        timestamps created_at
+    }
+
+    TRANSACTIONS {
+        bigint id PK
+        bigint sender_id FK "nullable (for deposits)"
+        bigint receiver_id FK
+        bigint amount "em centavos"
+        enum type "deposit, transfer"
+        enum status "pending, completed"
+        enum reversal_status "none, requested, approved, rejected"
+        text reversal_reason
+        bigint related_transaction_id FK "self-reference for reversals"
+        text notes
+        timestamps created_at
+    }
+```

@@ -30,4 +30,12 @@ class TransactionRepository implements TransactionRepositoryInterface
 
         return $query->paginate($perPage);
     }
+
+    public function getPendingReversals()
+    {
+        return Transaction::with(['sender', 'receiver'])
+            ->where('reversal_status', 'requested')
+            ->latest()
+            ->get();
+    }
 }

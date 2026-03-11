@@ -104,4 +104,104 @@ class TransactionService
     {
         return $this->transactionRepository->getPaginatedTransactions($userId, $perPage);
     }
+
+    /**
+     * Solicita o estorno de uma transação enviada por um usuário
+     */
+    public function requestReversal(int $transactionId, int $userId, string $reason)
+    {
+        $transaction = $this->transactionRepository->findById($transactionId);
+
+        if (!$transaction) {
+            throw new \Exception('Transação não encontrada.');
+        }
+
+        if ($transaction->sender_id !== $userId) {
+            throw new \Exception('Apenas o remetente pode solicitar o estorno desta transação.');
+        }
+
+        if ($transaction->type !== 'transfer') {
+            throw new \Exception('Apenas transferências podem ser estornadas.');
+        }
+
+        if ($transaction->reversal_status !== 'none') {
+            throw new \Exception('Já existe uma solicitação de estorno ou ela já foi processada.');
+        }
+
+        $transaction->update([
+            'reversal_status' => 'requested',
+            'reversal_reason' => $reason,
+        ]);
+
+        return $transaction;
+    }
+
+    /**
+     * Aprova o estorno de uma transação
+     */
+    public function approveReversal(int $transactionId)
+    {
+        $transaction = $this->transactionRepository->findById($transactionId);
+
+        if (!$transaction || $transaction->reversal_status !== 'requested') {
+            throw new \Exception('Solicitação de estorno inválida ou não encontrada.');
+        }
+
+        return DB::transaction(function () use ($transaction) {
+            $sender = $this->userRepository->findById($transaction->sender_id);
+            $receiver = $this->userRepository->findById($transaction->receiver_id);
+
+            // Se o recebedor já não tiver saldo suficiente, a transação lançaria um aviso?
+            // Vamos apenas cobrar e pode ficar negativo, ou a regra é bloquear se não tiver?
+            // Como é um banco simulado, se o estorno for aprovado, o sistema apenas debita mesmo que fique negativo ($receiver).
+            // Porém o User model ou Service de user precisará permitir saldo negativo ou tratar isso.
+            // Para manter simples, debitamos o valor.
+            
+            $newReceiverBalance = $receiver->balance - $transaction->amount;
+            $this->userRepository->update($receiver->id, ['balance' => $newReceiverBalance]);
+
+            $newSenderBalance = $sender->balance + $transaction->amount;
+            $this->userRepository->update($sender->id, ['balance' => $newSenderBalance]);
+
+            $transaction->update([
+                'reversal_status' => 'approved',
+            ]);
+
+            // Cria uma nova transação que registra a devolução de forma clara
+            $this->transactionRepository->create([
+                'sender_id' => $receiver->id,
+                'receiver_id' => $sender->id,
+                'amount' => $transaction->amount,
+                'type' => 'transfer',
+                'status' => 'completed',
+                'notes' => 'Estorno da transação #' . $transaction->id,
+                'related_transaction_id' => $transaction->id,
+            ]);
+
+            return $transaction;
+        });
+    }
+
+    /**
+     * Rejeita o estorno de uma transação
+     */
+    public function rejectReversal(int $transactionId)
+    {
+        $transaction = $this->transactionRepository->findById($transactionId);
+
+        if (!$transaction || $transaction->reversal_status !== 'requested') {
+            throw new \Exception('Solicitação de estorno inválida ou não encontrada.');
+        }
+
+        $transaction->update([
+            'reversal_status' => 'rejected',
+        ]);
+
+        return $transaction;
+    }
+
+    public function getPendingReversals()
+    {
+        return $this->transactionRepository->getPendingReversals();
+    }
 }
