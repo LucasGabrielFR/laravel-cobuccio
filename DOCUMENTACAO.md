@@ -126,8 +126,3 @@ php artisan test
 ```
 
 ---
-
-## 🚀 Próximos Passos (Diferenciais Pendentes)
-1.  **Observabilidade:** Exportar logs de auditoria para ferramentas externas (Datadog/NewRelic).
-2.  **Agendamento Automático:** Executar a auditoria diariamente via `Task Scheduling`.
-3.  **Interface Gráfica de Auditoria:** Permitir que o Admin visualize divergências diretamente no painel.
